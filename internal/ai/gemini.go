@@ -7,8 +7,45 @@ import (
 	"strings"
 
 	"github.com/google/generative-ai-go/genai"
+	"google.golang.org/api/iterator"
 	"google.golang.org/api/option"
 )
+
+// FetchModels gets a list of available Gemini models that support generateContent
+func FetchModels(ctx context.Context, apiKey string) ([]string, error) {
+	client, err := genai.NewClient(ctx, option.WithAPIKey(apiKey))
+	if err != nil {
+		return nil, fmt.Errorf("failed to create client: %w", err)
+	}
+	defer client.Close()
+
+	var models []string
+	iter := client.ListModels(ctx)
+	for {
+		m, err := iter.Next()
+		if err == iterator.Done {
+			break
+		}
+		if err != nil {
+			return nil, err
+		}
+		
+		isGen := false
+		for _, method := range m.SupportedGenerationMethods {
+			if method == "generateContent" {
+				isGen = true
+				break
+			}
+		}
+		
+		if isGen {
+			name := strings.TrimPrefix(m.Name, "models/")
+			models = append(models, name)
+		}
+	}
+	
+	return models, nil
+}
 
 // SolveMCQ sends the image to Gemini and asks for the multiple choice answer
 func SolveMCQ(ctx context.Context, apiKey string, imageBytes []byte) (string, error) {

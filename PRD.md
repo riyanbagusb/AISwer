@@ -1,5 +1,5 @@
 # Product Requirements Document (PRD)
-**Project Name:** Exam OCR Assistant (Auto-Answer MCQ)
+**Project Name:** AISwer Assistant (Auto-Answer MCQ)
 **Platform:** Desktop (macOS, Windows, Linux)
 **Language:** Go (Golang)
 **AI Engine:** Google Gemini Pro Vision (Rekomendasi utama) / Google Cloud Vision + LLM
@@ -7,7 +7,7 @@
 ---
 
 ## 1. Ringkasan Eksekutif (Executive Summary)
-Exam OCR Assistant adalah aplikasi desktop yang berjalan di latar belakang (background) untuk membantu pengguna menjawab soal ujian pilihan ganda secara instan. Saat pengguna menemui soal yang sulit, mereka dapat menekan kombinasi tombol (hotkey) tertentu di keyboard. Aplikasi akan otomatis mengambil tangkapan layar (screenshot), menganalisis soal menggunakan AI (Gemini), dan menampilkan jawaban pilihan ganda (misal: A, B, C, atau D) melalui pop-up kecil yang tidak mencolok di pojok kanan bawah layar.
+AISwer Assistant adalah aplikasi desktop yang berjalan di latar belakang (background) untuk membantu pengguna menjawab soal ujian pilihan ganda secara instan. Saat pengguna menemui soal yang sulit, mereka dapat menekan kombinasi tombol (hotkey) tertentu di keyboard. Aplikasi akan otomatis mengambil tangkapan layar (screenshot), menganalisis soal menggunakan AI (Gemini), dan menampilkan jawaban pilihan ganda (misal: A, B, C, atau D) melalui pop-up kecil yang tidak mencolok di pojok kanan bawah layar.
 
 ## 2. Tujuan (Objective)
 - Memberikan solusi instan dan akurat untuk soal pilihan ganda tanpa mengharuskan pengguna berpindah aplikasi (seamless experience).

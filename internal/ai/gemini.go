@@ -58,7 +58,8 @@ func FetchModels(ctx context.Context, apiKey string) ([]string, error) {
 				!strings.Contains(lowerName, "live") &&
 				!strings.Contains(lowerName, "robotics") &&
 				!strings.Contains(lowerName, "computer-use") &&
-				!strings.Contains(lowerName, "omni")
+				!strings.Contains(lowerName, "omni") &&
+				!strings.Contains(lowerName, "customtools")
 
 			if isGemini && isProOrFlash && isTextOut {
 				models = append(models, name)

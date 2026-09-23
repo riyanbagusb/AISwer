@@ -41,7 +41,10 @@ Aplikasi ini dilengkapi dengan script build otomatis yang akan mem-package aplik
 
 Anda dapat melakukan konfigurasi langsung melalui ikon aplikasi di menu bar:
 - **Set API Key...**: Klik menu ini untuk memasukkan atau mengubah Google Gemini API Key Anda.
-- **Model**: Pilih model Gemini yang ingin Anda gunakan. Daftar model ini diambil langsung secara dinamis dari server Gemini API.
+- **API Tier**: Anda dapat mengatur apakah API yang digunakan menggunakan versi **Free Tier** atau **Paid Tier**.
+  - **Free Tier**: Hanya dapat menggunakan model Flash/Flash-lite, dan akan ada limit *Request Per Minute (RPM)*, *Tokens Per Minute (TPM)*, dan *Request Per Day (RPD)* berdasarkan limit gratis Gemini.
+  - **Paid Tier**: Tidak ada limit dari sisi aplikasi, dan opsi model "Pro" bisa dipilih.
+- **Model**: Pilih model Gemini yang ingin Anda gunakan. Daftar model hanya akan menampilkan model bervarian teks (*Text-out*), menyembunyikan varian gambar, suara, atau *agent*.
 - **Quit**: Keluar dari aplikasi.
 
 *Catatan: Segala perubahan API Key atau pilihan model akan langsung disimpan ke dalam file `.env` dan diaplikasikan tanpa perlu merestart aplikasi.*

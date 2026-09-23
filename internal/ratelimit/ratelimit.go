@@ -23,13 +23,41 @@ type Usage struct {
 
 var (
 	usageFile string
-	usage     Usage
+	usageMap  map[string]*Usage
 	mu        sync.Mutex
 )
 
 func init() {
 	usageFile = filepath.Join(config.GetConfigDir(), "ratelimit.json")
+	usageMap = make(map[string]*Usage)
 	loadUsage()
+}
+
+func getUsageForModel(modelName string) *Usage {
+	if u, exists := usageMap[modelName]; exists {
+		return u
+	}
+	u := &Usage{}
+	usageMap[modelName] = u
+	return u
+}
+
+func updateTimeWindows(u *Usage) {
+	now := time.Now()
+	// Reset minute counters if it's a different minute
+	if now.Truncate(time.Minute) != u.LastMinute.Truncate(time.Minute) {
+		u.RequestsPerMinute = 0
+		u.TokensPerMinute = 0
+		u.LastMinute = now
+	}
+
+	// Reset daily counters if it's a different day
+	y1, m1, d1 := now.Date()
+	y2, m2, d2 := u.LastDay.Date()
+	if y1 != y2 || m1 != m2 || d1 != d2 {
+		u.RequestsPerDay = 0
+		u.LastDay = now
+	}
 }
 
 func loadUsage() {
@@ -38,28 +66,16 @@ func loadUsage() {
 
 	data, err := os.ReadFile(usageFile)
 	if err == nil {
-		_ = json.Unmarshal(data, &usage)
+		_ = json.Unmarshal(data, &usageMap)
 	}
 
-	now := time.Now()
-	// Reset minute counters if it's a different minute
-	if now.Truncate(time.Minute) != usage.LastMinute.Truncate(time.Minute) {
-		usage.RequestsPerMinute = 0
-		usage.TokensPerMinute = 0
-		usage.LastMinute = now
-	}
-
-	// Reset daily counters if it's a different day
-	y1, m1, d1 := now.Date()
-	y2, m2, d2 := usage.LastDay.Date()
-	if y1 != y2 || m1 != m2 || d1 != d2 {
-		usage.RequestsPerDay = 0
-		usage.LastDay = now
+	for _, u := range usageMap {
+		updateTimeWindows(u)
 	}
 }
 
 func saveUsage() {
-	data, err := json.MarshalIndent(usage, "", "  ")
+	data, err := json.MarshalIndent(usageMap, "", "  ")
 	if err == nil {
 		_ = os.WriteFile(usageFile, data, 0644)
 	}
@@ -75,19 +91,8 @@ func CheckLimit(modelName string) error {
 	mu.Lock()
 	defer mu.Unlock()
 
-	// Update time windows
-	now := time.Now()
-	if now.Truncate(time.Minute) != usage.LastMinute.Truncate(time.Minute) {
-		usage.RequestsPerMinute = 0
-		usage.TokensPerMinute = 0
-		usage.LastMinute = now
-	}
-	y1, m1, d1 := now.Date()
-	y2, m2, d2 := usage.LastDay.Date()
-	if y1 != y2 || m1 != m2 || d1 != d2 {
-		usage.RequestsPerDay = 0
-		usage.LastDay = now
-	}
+	u := getUsageForModel(modelName)
+	updateTimeWindows(u)
 
 	lowerName := strings.ToLower(modelName)
 	if strings.Contains(lowerName, "-pro") {
@@ -100,14 +105,14 @@ func CheckLimit(modelName string) error {
 		maxRPM, maxTPM, maxRPD = 15, 250000, 500
 	}
 
-	if usage.RequestsPerDay >= maxRPD {
-		return fmt.Errorf("Daily request limit reached for Free tier (%d/%d RPD)", usage.RequestsPerDay, maxRPD)
+	if u.RequestsPerDay >= maxRPD {
+		return fmt.Errorf("Daily request limit reached for %s on Free tier (%d/%d RPD)", modelName, u.RequestsPerDay, maxRPD)
 	}
-	if usage.RequestsPerMinute >= maxRPM {
-		return fmt.Errorf("Minute request limit reached for Free tier (%d/%d RPM)", usage.RequestsPerMinute, maxRPM)
+	if u.RequestsPerMinute >= maxRPM {
+		return fmt.Errorf("Minute request limit reached for %s on Free tier (%d/%d RPM)", modelName, u.RequestsPerMinute, maxRPM)
 	}
-	if usage.TokensPerMinute >= maxTPM {
-		return fmt.Errorf("Minute token limit reached for Free tier (%d/%d TPM)", usage.TokensPerMinute, maxTPM)
+	if u.TokensPerMinute >= maxTPM {
+		return fmt.Errorf("Minute token limit reached for %s on Free tier (%d/%d TPM)", modelName, u.TokensPerMinute, maxTPM)
 	}
 
 	return nil
@@ -123,9 +128,12 @@ func AddUsage(modelName string, tokens int) {
 	mu.Lock()
 	defer mu.Unlock()
 
-	usage.RequestsPerMinute++
-	usage.TokensPerMinute += tokens
-	usage.RequestsPerDay++
+	u := getUsageForModel(modelName)
+	updateTimeWindows(u)
+
+	u.RequestsPerMinute++
+	u.TokensPerMinute += tokens
+	u.RequestsPerDay++
 
 	saveUsage()
 }

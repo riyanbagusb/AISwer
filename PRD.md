@@ -37,6 +37,11 @@ Pada macOS, aplikasi secara otomatis memeriksa apakah izin **Accessibility** dan
 - Menampilkan teks peringatan `! Perms` di Menu Bar.
 - Melakukan polling secara diam-diam di latar belakang, dan langsung mengaktifkan fitur hotkey begitu izin diberikan oleh pengguna.
 
+### 3.6. API Tier & Rate Limiting
+Pengguna dapat memilih antara **Free Tier** dan **Paid Tier**.
+- **Free Tier**: Aplikasi menerapkan *rate limit* secara ketat per model (misal: 15 RPM, 250K TPM, 500 RPD untuk model Flash Lite). Model "Pro" tidak dapat digunakan pada tier ini.
+- **Paid Tier**: Tidak ada batasan *rate limit* dari sisi aplikasi, dan semua model *Text-out* termasuk varian "Pro" dapat digunakan secara bebas.
+
 ## 4. Arsitektur & Teknologi (Tech Stack)
 Aplikasi dikembangkan menggunakan bahasa **Go (Golang)** dengan pendekatan *clean code* terdesentralisasi:
 
@@ -68,3 +73,4 @@ Khusus untuk pengguna **macOS**:
 - [x] **Fase 2: AI Integration** - Sambungan ke Gemini Vision.
 - [x] **Fase 3: System Tray UI** - Pembuatan menu interaktif, pengaturan API Key, dan daftar model dinamis.
 - [x] **Fase 4: Packaging & Refactoring** - Clean code modular, smart permissions, dan packaging menjadi `.app` bundle untuk macOS.
+- [x] **Fase 5: API Tier & Rate Limiting** - Pemilihan tier gratis/berbayar, perlindungan limit (RPM, TPM, RPD) per model, dan penyaringan model khusus *Text-out*.

@@ -43,15 +43,23 @@ func FetchModels(ctx context.Context, apiKey string) ([]string, error) {
 			
 			// Filter to only include Text-out models
 			lowerName := strings.ToLower(name)
+			
+			// Hanya izinkan gemini pro, flash, atau flash-lite
+			isGemini := strings.HasPrefix(lowerName, "gemini-")
+			isProOrFlash := strings.Contains(lowerName, "-pro") || strings.Contains(lowerName, "-flash")
+			
+			// Buang varian non-teks
 			isTextOut := !strings.Contains(lowerName, "image") &&
 				!strings.Contains(lowerName, "tts") &&
 				!strings.Contains(lowerName, "audio") &&
 				!strings.Contains(lowerName, "lyria") &&
 				!strings.Contains(lowerName, "veo") &&
 				!strings.Contains(lowerName, "transcribe") &&
-				!strings.Contains(lowerName, "live")
+				!strings.Contains(lowerName, "live") &&
+				!strings.Contains(lowerName, "robotics") &&
+				!strings.Contains(lowerName, "computer-use")
 
-			if isTextOut {
+			if isGemini && isProOrFlash && isTextOut {
 				models = append(models, name)
 			}
 		}

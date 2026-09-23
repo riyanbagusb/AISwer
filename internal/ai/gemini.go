@@ -48,7 +48,7 @@ func FetchModels(ctx context.Context, apiKey string) ([]string, error) {
 			isGemini := strings.HasPrefix(lowerName, "gemini-")
 			isProOrFlash := strings.Contains(lowerName, "-pro") || strings.Contains(lowerName, "-flash")
 			
-			// Buang varian non-teks
+			// Buang varian non-teks dan model lain yang tidak diinginkan
 			isTextOut := !strings.Contains(lowerName, "image") &&
 				!strings.Contains(lowerName, "tts") &&
 				!strings.Contains(lowerName, "audio") &&
@@ -57,7 +57,8 @@ func FetchModels(ctx context.Context, apiKey string) ([]string, error) {
 				!strings.Contains(lowerName, "transcribe") &&
 				!strings.Contains(lowerName, "live") &&
 				!strings.Contains(lowerName, "robotics") &&
-				!strings.Contains(lowerName, "computer-use")
+				!strings.Contains(lowerName, "computer-use") &&
+				!strings.Contains(lowerName, "omni")
 
 			if isGemini && isProOrFlash && isTextOut {
 				models = append(models, name)

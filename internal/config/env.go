@@ -27,19 +27,19 @@ func Init(embeddedEnv []byte) {
 	_ = godotenv.Overload()
 }
 
+// GetConfigDir returns the directory where configuration files should be stored.
+func GetConfigDir() string {
+	if exePath, err := os.Executable(); err == nil {
+		return filepath.Dir(exePath)
+	}
+	return "."
+}
+
 // Update writes the given key-value pair to the .env file and sets it in the current environment.
 func Update(key, val string) {
 	os.Setenv(key, val)
 
-	envPath := ".env"
-	if exePath, err := os.Executable(); err == nil {
-		exeDirEnv := filepath.Join(filepath.Dir(exePath), ".env")
-		if _, err := os.Stat(exeDirEnv); err == nil {
-			envPath = exeDirEnv
-		} else {
-			envPath = exeDirEnv
-		}
-	}
+	envPath := filepath.Join(GetConfigDir(), ".env")
 
 	var content []byte
 	var err error

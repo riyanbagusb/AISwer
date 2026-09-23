@@ -6,6 +6,8 @@ import (
 	"os"
 	"strings"
 
+	"aiswer/internal/ratelimit"
+
 	"github.com/google/generative-ai-go/genai"
 	"google.golang.org/api/iterator"
 	"google.golang.org/api/option"
@@ -61,6 +63,10 @@ func FetchModels(ctx context.Context, apiKey string) ([]string, error) {
 				!strings.Contains(lowerName, "omni") &&
 				!strings.Contains(lowerName, "customtools")
 
+			if os.Getenv("GEMINI_TIER") == "free" && strings.Contains(lowerName, "-pro") {
+				isGemini = false // Exclude pro models if free tier
+			}
+
 			if isGemini && isProOrFlash && isTextOut {
 				models = append(models, name)
 			}
@@ -82,6 +88,10 @@ func SolveMCQ(ctx context.Context, apiKey string, imageBytes []byte) (string, er
 	if modelName == "" {
 		modelName = "gemini-3.8-flash"
 	}
+	if err := ratelimit.CheckLimit(modelName); err != nil {
+		return "", err
+	}
+
 	model := client.GenerativeModel(modelName)
 	prompt := genai.Text("Baca soal pilihan ganda dari gambar ini beserta pilihan jawabannya. Pilih satu jawaban yang paling tepat dan kembalikan HANYA huruf pilihannya saja (contoh: A, B, C, D, atau E).")
 	imgData := genai.ImageData("image/png", imageBytes)
@@ -89,6 +99,10 @@ func SolveMCQ(ctx context.Context, apiKey string, imageBytes []byte) (string, er
 	resp, err := model.GenerateContent(ctx, prompt, imgData)
 	if err != nil {
 		return "", fmt.Errorf("failed to generate content: %w", err)
+	}
+
+	if resp != nil && resp.UsageMetadata != nil {
+		ratelimit.AddUsage(modelName, int(resp.UsageMetadata.TotalTokenCount))
 	}
 
 	if len(resp.Candidates) == 0 || len(resp.Candidates[0].Content.Parts) == 0 {

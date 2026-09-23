@@ -40,7 +40,20 @@ func FetchModels(ctx context.Context, apiKey string) ([]string, error) {
 		
 		if isGen {
 			name := strings.TrimPrefix(m.Name, "models/")
-			models = append(models, name)
+			
+			// Filter to only include Text-out models
+			lowerName := strings.ToLower(name)
+			isTextOut := !strings.Contains(lowerName, "image") &&
+				!strings.Contains(lowerName, "tts") &&
+				!strings.Contains(lowerName, "audio") &&
+				!strings.Contains(lowerName, "lyria") &&
+				!strings.Contains(lowerName, "veo") &&
+				!strings.Contains(lowerName, "transcribe") &&
+				!strings.Contains(lowerName, "live")
+
+			if isTextOut {
+				models = append(models, name)
+			}
 		}
 	}
 	
